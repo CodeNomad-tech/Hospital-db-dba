@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+
+{% block title %}Public Health Intelligence & Epidemiological Analytics — AegisHealth National{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">📊 National Epidemiological Surveillance</span>
+    <h1 class="page-title">Public Health Intelligence & Operational Analytics</h1>
+    <p class="page-desc">
+      Macro-level clinical insights: disease burden, hospital bed utilization, blood supply readiness, and NHIMA insurance claim recovery.
+    </p>
+  </div>
+  <div style="display: flex; gap: 10px;">
+    <button onclick="window.print()" class="btn btn-secondary">
+      <span>🖨️ Export Epidemiological Report</span>
+    </button>
+  </div>
+</div>
+
+<!-- Key Analytics Metric Ticker -->
+<section class="kpi-grid">
+  <div class="kpi-card accent-indigo">
+    <div class="kpi-header">
+      <span class="kpi-label">Consultation Visits</span>
+      <div class="kpi-icon">📈</div>
+    </div>
+    <div class="kpi-value">{{ total_appointments }}</div>
+    <div class="kpi-footer">
+      <span>{{ completion_rate }}% Completion Rate</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-amber">
+    <div class="kpi-header">
+      <span class="kpi-label">Bed Occupancy Rate</span>
+      <div class="kpi-icon">🛏️</div>
+    </div>
+    <div class="kpi-value">{{ bed_occupancy_rate }}%</div>
+    <div class="kpi-footer">
+      <span>Across all wards & ICU</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-emerald">
+    <div class="kpi-header">
+      <span class="kpi-label">Revenue Recovery Rate</span>
+      <div class="kpi-icon">💰</div>
+    </div>
+    <div class="kpi-value">{{ recovery_rate }}%</div>
+    <div class="kpi-footer">
+      <span class="badge-up">&bull; Settled & Validated</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-emerald">
+    <div class="kpi-header">
+      <span class="kpi-label">NHIMA Insured Ratio</span>
+      <div class="kpi-icon">🛡️</div>
+    </div>
+    <div class="kpi-value">{{ insured_ratio }}%</div>
+    <div class="kpi-footer">
+      <span>Universal Coverage Metric</span>
+    </div>
+  </div>
+</section>
+
+<!-- Visual Analytics Graphs (Chart.js) -->
+<div class="panel-grid-equal">
+  <!-- Chart 1: Admissions by Department -->
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">🏥 Inpatient Admissions by Department</h2>
+        <span class="panel-subtitle">Caseload pressure across medical specialties</span>
+      </div>
+    </div>
+    <div style="height: 280px;">
+      <canvas id="deptChart"></canvas>
+    </div>
+  </section>
+
+  <!-- Chart 2: Bed Capacity by Room Type -->
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">🛏️ Bed Capacity by Room Classification</h2>
+        <span class="panel-subtitle">ICU, Emergency, Operating, and General Wards</span>
+      </div>
+    </div>
+    <div style="height: 280px;">
+      <canvas id="roomChart"></canvas>
+    </div>
+  </section>
+</div>
+
+<div class="panel-grid-equal">
+  <!-- Chart 3: Blood Group Demographic Distribution -->
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">🩸 Citizen Blood Group Distribution</h2>
+        <span class="panel-subtitle">Emergency blood transfusion reserve readiness</span>
+      </div>
+    </div>
+    <div style="height: 280px;">
+      <canvas id="bloodChart"></canvas>
+    </div>
+  </section>
+
+  <!-- Chart 4: Billing & Financial Recovery Breakdown -->
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">💳 Billing & Revenue Recovery Share</h2>
+        <span class="panel-subtitle">NHIMA and patient fee collection breakdown (K)</span>
+      </div>
+    </div>
+    <div style="height: 280px;">
+      <canvas id="billingChart"></canvas>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Chart 1: Department Admissions
+  const deptCtx = document.getElementById('deptChart');
+  if (deptCtx) {
+    new Chart(deptCtx, {
+      type: 'bar',
+      data: {
+        labels: {{ dept_labels|tojson }},
+        datasets: [{
+          label: 'Total Inpatients',
+          data: {{ dept_values|tojson }},
+          backgroundColor: '#0284c7',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+      }
+    });
+  }
+
+  // Chart 2: Room Distribution
+  const roomCtx = document.getElementById('roomChart');
+  if (roomCtx) {
+    new Chart(roomCtx, {
+      type: 'doughnut',
+      data: {
+        labels: {{ room_labels|tojson }},
+        datasets: [{
+          data: {{ room_values|tojson }},
+          backgroundColor: ['#0d9488', '#0284c7', '#f59e0b', '#f43f5e', '#8b5cf6']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+  }
+
+  // Chart 3: Blood Type Distribution
+  const bloodCtx = document.getElementById('bloodChart');
+  if (bloodCtx) {
+    new Chart(bloodCtx, {
+      type: 'pie',
+      data: {
+        labels: {{ blood_labels|tojson }},
+        datasets: [{
+          data: {{ blood_values|tojson }},
+          backgroundColor: ['#e11d48', '#f43f5e', '#fb7185', '#fda4af', '#0284c7', '#38bdf8', '#0d9488', '#10b981']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+  }
+
+  // Chart 4: Billing Status
+  const billCtx = document.getElementById('billingChart');
+  if (billCtx) {
+    new Chart(billCtx, {
+      type: 'doughnut',
+      data: {
+        labels: {{ bill_labels|tojson }},
+        datasets: [{
+          data: {{ bill_values|tojson }},
+          backgroundColor: ['#10b981', '#f43f5e', '#0284c7', '#f59e0b']
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'right' } }
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

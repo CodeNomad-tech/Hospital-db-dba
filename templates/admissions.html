@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Hospital Ward & Bed Management Grid — AegisHealth National{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">🛏️ Hospital Capacity & Triage Operations</span>
+    <h1 class="page-title">National Hospital Bed & Ward Management Grid</h1>
+    <p class="page-desc">
+      Real-time tracking of ICU, Emergency, Operating Theatre, and Inpatient Ward bed allocations across public referral networks.
+    </p>
+  </div>
+  <div style="display: flex; gap: 10px;">
+    <button type="button" onclick="document.getElementById('admit-modal').classList.add('active')" class="btn btn-primary">
+      <span>+ Admit Inpatient</span>
+    </button>
+  </div>
+</div>
+
+<!-- Bed Status Overview Grid -->
+<section class="panel" style="margin-bottom: 28px;">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">🏨 Live Bed Capacity Matrix</h2>
+      <span class="panel-subtitle">Current status by room classification & department</span>
+    </div>
+    <div style="display: flex; gap: 12px; font-size: 0.82rem;">
+      <span class="badge badge-available">&bull; AVAILABLE</span>
+      <span class="badge badge-occupied">&bull; OCCUPIED</span>
+      <span class="badge badge-maintenance">&bull; MAINTENANCE</span>
+    </div>
+  </div>
+
+  <div class="bed-grid">
+    {% for room in rooms %}
+      <div class="bed-card status-{{ room.status.lower() }}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+          <div class="bed-num">{{ room.room_number }}</div>
+          <span class="badge badge-{{ room.status.lower() }}">{{ room.status }}</span>
+        </div>
+        <div class="bed-type">{{ room.room_type }}</div>
+        <div class="bed-dept">{{ room.department_name }}</div>
+        {% if room.patient_name %}
+          <div style="margin-top: 8px; font-size: 0.78rem; font-weight: 700; color: #9f1239;">
+            Patient: {{ room.patient_name }}
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Active Inpatients Table & Discharge Workflow -->
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">🛏️ Current Inpatient Admissions ({{ active_admissions|length }} Active)</h2>
+      <span class="panel-subtitle">Admitted patients under clinical observation</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Admission ID</th>
+          <th>Citizen Patient</th>
+          <th>Ward / Room</th>
+          <th>Attending Physician</th>
+          <th>Admitted Since</th>
+          <th>Primary Diagnosis</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for adm in active_admissions %}
+          <tr>
+            <td><span style="font-family: var(--font-mono); font-weight: 700; color: var(--teal-600);">#ADM-{{ adm.admission_id }}</span></td>
+            <td>
+              <a href="{{ url_for('patient_detail', patient_id=adm.patient_id) }}" style="text-decoration: none; font-weight: 700; color: var(--gov-navy-900);">
+                {{ adm.patient_name }}
+              </a>
+            </td>
+            <td>
+              <span class="badge badge-gov">{{ adm.room_number }} ({{ adm.room_type }})</span>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">{{ adm.department_name }}</div>
+            </td>
+            <td>Dr. {{ adm.doctor_name }}</td>
+            <td style="font-size: 0.82rem; color: var(--gov-navy-700);">{{ adm.admission_date }}</td>
+            <td style="font-size: 0.88rem;"><strong>{{ adm.diagnosis or 'Under observation' }}</strong></td>
+            <td>
+              <form method="post" action="{{ url_for('discharge_patient', admission_id=adm.admission_id) }}" onsubmit="return confirm('Confirm discharge for {{ adm.patient_name }}?');">
+                <button type="submit" class="btn btn-secondary btn-sm" style="color: var(--rose-600);">
+                  Discharge &rarr;
+                </button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 36px;">
+              No active inpatient admissions currently recorded.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Admit Inpatient Modal -->
+<div class="modal-overlay" id="admit-modal">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+      <h3 style="color: var(--gov-navy-900); font-size: 1.3rem;">Admit Citizen to Hospital Ward</h3>
+      <button type="button" onclick="document.getElementById('admit-modal').classList.remove('active')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+
+    <form method="post" action="{{ url_for('create_admission') }}">
+      <div class="form-group">
+        <label class="form-label">Select Patient *</label>
+        <select name="patient_id" required>
+          <option value="">-- Choose Patient --</option>
+          {% for patient in patients_for_select %}
+            <option value="{{ patient.patient_id }}">{{ patient.first_name }} {{ patient.last_name }} (ID #{{ patient.patient_id }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Select Room / Bed *</label>
+        <select name="room_id" required>
+          <option value="">-- Choose Available Bed --</option>
+          {% for room in available_rooms %}
+            <option value="{{ room.room_id }}">Room {{ room.room_number }} ({{ room.room_type }} - {{ room.department_name }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Attending Doctor *</label>
+        <select name="attending_doctor_id" required>
+          <option value="">-- Choose Specialist --</option>
+          {% for doc in doctors %}
+            <option value="{{ doc.doctor_id }}">Dr. {{ doc.first_name }} {{ doc.last_name }} ({{ doc.specialty }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Admission Diagnosis / Reason *</label>
+        <textarea name="diagnosis" rows="3" required placeholder="Clinical assessment, diagnosis, reason for inpatient monitoring..."></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" onclick="document.getElementById('admit-modal').classList.remove('active')" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Confirm Admission</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

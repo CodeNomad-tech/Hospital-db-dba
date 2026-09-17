@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}AegisHealth National{% endblock %} — Ministry of Health Digital Infrastructure</title>
+    <meta name="description" content="National Electronic Health Records & Sovereign Clinical Operations System for Universal Health Coverage, Bed Management, and Epidemiological Intelligence." />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <!-- Chart.js for Public Health Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <!-- Official Sovereign Banner -->
+    <div class="gov-banner">
+      <div class="gov-banner-inner">
+        <div class="gov-tag">
+          <span class="gov-flag"></span>
+          <span>Republic Digital Health Infrastructure &bull; Ministry of Health Official Platform</span>
+        </div>
+        <div>
+          <span style="font-family: var(--font-mono); font-size: 0.7rem; color: #38bdf8;">SECURE CITIZEN PORTAL &bull; 3NF REPLICATED</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <header class="topbar">
+      <div class="nav-container">
+        <a href="{{ url_for('landing') }}" class="brand-wrap">
+          <div class="brand-logo">🛡️</div>
+          <div>
+            <div class="brand-title">AegisHealth <span style="font-weight: 400; color: #38bdf8;">National</span></div>
+            <div class="brand-subtitle">Public Healthcare & Clinical Grid</div>
+          </div>
+        </a>
+
+        <ul class="nav-menu">
+          <li><a href="{{ url_for('landing') }}" class="{% if request.endpoint == 'landing' %}active{% endif %}">Home</a></li>
+          <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Dashboard</a></li>
+          <li><a href="{{ url_for('patients_list') }}" class="{% if request.endpoint in ['patients_list', 'patient_detail'] %}active{% endif %}">Citizens (EHR)</a></li>
+          <li><a href="{{ url_for('admissions_view') }}" class="{% if request.endpoint == 'admissions_view' %}active{% endif %}">Wards & Beds</a></li>
+          <li><a href="{{ url_for('pharmacy_view') }}" class="{% if request.endpoint == 'pharmacy_view' %}active{% endif %}">Pharmacy</a></li>
+          <li><a href="{{ url_for('doctors_list') }}" class="{% if request.endpoint == 'doctors_list' %}active{% endif %}">Specialists</a></li>
+          <li><a href="{{ url_for('billing_view') }}" class="{% if request.endpoint == 'billing_view' %}active{% endif %}">Billing & NHIMA</a></li>
+          <li><a href="{{ url_for('analytics_view') }}" class="{% if request.endpoint == 'analytics_view' %}active{% endif %}">Analytics</a></li>
+          <li><a href="{{ url_for('system_health_view') }}" class="{% if request.endpoint == 'system_health_view' %}active{% endif %}">DBA Governance</a></li>
+          <li><a href="{{ url_for('about_view') }}" class="{% if request.endpoint == 'about_view' %}active{% endif %}">Grant Whitepaper</a></li>
+        </ul>
+
+        <div class="nav-actions">
+          <a href="{{ url_for('index') }}#appointment-form" class="btn btn-primary btn-sm">
+            <span>+ Quick Triage</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Application View -->
+    <main class="main-wrapper">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="flash-container">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">
+                <span>{{ message }}</span>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer; font-weight:bold; color:inherit;">&times;</button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Government & Public Sector Footer -->
+    <footer class="gov-footer">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <div class="footer-col">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+              <div class="brand-logo" style="width: 32px; height: 32px; font-size: 1rem;">🛡️</div>
+              <h4 style="margin: 0; font-size: 1.1rem;">AegisHealth National</h4>
+            </div>
+            <p style="font-size: 0.85rem; line-height: 1.6; color: #94a3b8; margin-bottom: 16px;">
+              National Public Health Information Infrastructure & Electronic Health Record Platform. Built for sovereign data resilience, universal healthcare access, NHIMA integration, and real-time hospital bed allocation.
+            </p>
+            <div style="display: flex; gap: 8px;">
+              <span class="badge badge-nhima">NHIMA Interoperable</span>
+              <span class="badge badge-gov">SDG 3.8 Aligned</span>
+              <span class="badge badge-available">PostgreSQL 3NF</span>
+            </div>
+          </div>
+
+          <div class="footer-col">
+            <h4>Clinical Modules</h4>
+            <ul>
+              <li><a href="{{ url_for('index') }}">Clinical Dashboard</a></li>
+              <li><a href="{{ url_for('patients_list') }}">Citizen Health Registry</a></li>
+              <li><a href="{{ url_for('admissions_view') }}">Emergency & ICU Bed Grid</a></li>
+              <li><a href="{{ url_for('pharmacy_view') }}">Essential Drug Supply</a></li>
+              <li><a href="{{ url_for('doctors_list') }}">Specialist Directory</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4>Governance & Funding</h4>
+            <ul>
+              <li><a href="{{ url_for('about_view') }}">Grant Funding Dossier</a></li>
+              <li><a href="{{ url_for('analytics_view') }}">Public Health Intelligence</a></li>
+              <li><a href="{{ url_for('system_health_view') }}">DBA Security & Replication</a></li>
+              <li><a href="{{ url_for('billing_view') }}">NHIMA Revenue Ledger</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-col">
+            <h4>Standards & Security</h4>
+            <p style="font-size: 0.82rem; color: #64748b; line-height: 1.6; margin-bottom: 12px;">
+              Compliant with National Data Protection Act, HIPAA/GDPR clinical privacy rules, and Role-Based Access Control (RBAC).
+            </p>
+            <div style="font-family: var(--font-mono); font-size: 0.72rem; color: #38bdf8;">
+              Status: Primary Active &bull; Streaming OK
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <div>
+            &copy; 2026 Republic Digital Health Transformation Initiative. All rights reserved.
+          </div>
+          <div style="display: flex; gap: 16px;">
+            <a href="{{ url_for('about_view') }}">Policy Framework</a>
+            <a href="{{ url_for('system_health_view') }}">System Architecture</a>
+            <a href="{{ url_for('about_view') }}#funding">Donor Relations</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Essential Medicines & Pharmacy Inventory — AegisHealth National{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">💊 Pharmaceutical Supply Chain & Stockout Prevention</span>
+    <h1 class="page-title">National Essential Medicines & Dispensary Registry</h1>
+    <p class="page-desc">
+      Real-time pharmaceutical inventory monitoring, unit pricing, manufacturer traceability, and prescription dispensing ledger.
+    </p>
+  </div>
+</div>
+
+<!-- Stock Inventory Cards Grid -->
+<div class="panel-grid-3" style="margin-bottom: 28px;">
+  <div class="kpi-card accent-emerald">
+    <div class="kpi-header">
+      <span class="kpi-label">Essential Formulary Lines</span>
+      <div class="kpi-icon">💊</div>
+    </div>
+    <div class="kpi-value">{{ medications|length }}</div>
+    <div class="kpi-footer">
+      <span>WHO Model List Aligned</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-indigo">
+    <div class="kpi-header">
+      <span class="kpi-label">Total Units in Stock</span>
+      <div class="kpi-icon">📦</div>
+    </div>
+    <div class="kpi-value">
+      {{ medications|sum(attribute='stock_quantity') }}
+    </div>
+    <div class="kpi-footer">
+      <span class="badge-up">&bull; Central Medical Stores</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-amber">
+    <div class="kpi-header">
+      <span class="kpi-label">Prescriptions Dispensed</span>
+      <div class="kpi-icon">📋</div>
+    </div>
+    <div class="kpi-value">{{ recent_prescriptions|length }}</div>
+    <div class="kpi-footer">
+      <span>Doctor e-Prescriptions</span>
+    </div>
+  </div>
+</div>
+
+<!-- Medications Inventory Table -->
+<section class="panel" style="margin-bottom: 28px;">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">📦 Essential Drug Stock & Unit Price Ledger</h2>
+      <span class="panel-subtitle">Real-time inventory levels from hospital pharmacy</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Drug Code</th>
+          <th>Medication Name</th>
+          <th>Manufacturer / Source</th>
+          <th>Available Stock</th>
+          <th>Unit Price (K)</th>
+          <th>Stock Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for med in medications %}
+          <tr>
+            <td><span style="font-family: var(--font-mono); font-weight: 700; color: var(--teal-600);">#MED-{{ med.medication_id }}</span></td>
+            <td><strong>{{ med.name }}</strong></td>
+            <td style="color: var(--gov-navy-700);">{{ med.manufacturer or 'National Stores' }}</td>
+            <td>
+              <strong style="font-size: 1.1rem; color: var(--gov-navy-900);">{{ med.stock_quantity }}</strong> units
+            </td>
+            <td>
+              <strong>K {{ '%.2f'|format(med.unit_price) }}</strong>
+            </td>
+            <td>
+              {% if med.stock_quantity > 400 %}
+                <span class="badge badge-available">Optimal Supply</span>
+              {% elif med.stock_quantity > 100 %}
+                <span class="badge badge-partial">Moderate Supply</span>
+              {% else %}
+                <span class="badge badge-occupied">Low Stock Warning</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">No medications found in database.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Doctor Prescriptions Fulfillment Queue -->
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">📝 Clinical Prescriptions & Dispensing Log</h2>
+      <span class="panel-subtitle">Doctor-issued medication directives linked to patient diagnoses</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Prescription ID</th>
+          <th>Patient Name</th>
+          <th>Prescribed Medication</th>
+          <th>Dosage Instructions</th>
+          <th>Duration (Days)</th>
+          <th>Prescribing Doctor</th>
+          <th>Clinical Diagnosis</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rx in recent_prescriptions %}
+          <tr>
+            <td><span style="font-family: var(--font-mono); font-weight: 700;">#RX-{{ rx.prescription_id }}</span></td>
+            <td>
+              <a href="{{ url_for('patient_detail', patient_id=rx.patient_id) }}" style="text-decoration: none; font-weight: 700; color: var(--gov-navy-900);">
+                {{ rx.patient_name }}
+              </a>
+            </td>
+            <td><strong>{{ rx.medication_name }}</strong></td>
+            <td><span class="badge badge-gov">{{ rx.dosage }}</span></td>
+            <td>{{ rx.duration_days }} days</td>
+            <td>Dr. {{ rx.doctor_name }}</td>
+            <td style="font-size: 0.85rem; color: var(--gov-navy-700);">{{ rx.diagnosis or '—' }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No prescriptions on record.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

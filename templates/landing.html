@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}National Electronic Health Platform — Republic Digital Health System{% endblock %}
+
+{% block content %}
+<!-- National Platform Hero Section -->
+<section class="landing-hero">
+  <div class="landing-hero-content">
+    <div class="landing-hero-badge">
+      <span>🏛️ National Healthcare Modernization Initiative</span>
+      <span>&bull;</span>
+      <span>Universal Health Coverage Ready</span>
+    </div>
+    <h1>The Sovereign Digital Health & Clinical Operations Infrastructure</h1>
+    <p>
+      Empowering the Ministry of Health, national referral hospitals, and district clinics with unified Electronic Health Records (EHR), real-time ICU and ward bed logistics, essential drug supply chain tracking, and transparent NHIMA revenue management.
+    </p>
+    <div class="landing-hero-actions">
+      <a href="{{ url_for('index') }}" class="btn btn-primary btn-lg">
+        <span>🚀 Launch Clinical Dashboard</span>
+      </a>
+      <a href="{{ url_for('about_view') }}" class="btn btn-secondary btn-lg">
+        <span>📄 View Grant & Policy Dossier</span>
+      </a>
+      <a href="{{ url_for('analytics_view') }}" class="btn btn-teal btn-lg">
+        <span>📊 Public Health Intelligence</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- National Public Health KPI Ticker -->
+<section class="kpi-grid">
+  <div class="kpi-card accent-emerald">
+    <div class="kpi-header">
+      <span class="kpi-label">Citizens Registered</span>
+      <div class="kpi-icon">👥</div>
+    </div>
+    <div class="kpi-value">{{ overview.patients }}</div>
+    <div class="kpi-footer">
+      <span class="badge-up">&uarr; Universal Registry</span>
+      <span>National ID Interoperable</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-indigo">
+    <div class="kpi-header">
+      <span class="kpi-label">Specialist Doctors</span>
+      <div class="kpi-icon">🩺</div>
+    </div>
+    <div class="kpi-value">{{ overview.doctors }}</div>
+    <div class="kpi-footer">
+      <span>5 Clinical Departments</span>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Triage & Visits</span>
+      <div class="kpi-icon">📅</div>
+    </div>
+    <div class="kpi-value">{{ overview.appointments }}</div>
+    <div class="kpi-footer">
+      <span>Scheduled & Completed</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-amber">
+    <div class="kpi-header">
+      <span class="kpi-label">Active Admissions</span>
+      <div class="kpi-icon">🛏️</div>
+    </div>
+    <div class="kpi-value">{{ overview.admissions }}</div>
+    <div class="kpi-footer">
+      <span>ICU, Emergency, General Wards</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-rose">
+    <div class="kpi-header">
+      <span class="kpi-label">NHIMA & Billing Ledger</span>
+      <div class="kpi-icon">💳</div>
+    </div>
+    <div class="kpi-value">K {{ '%.2f'|format(overview.total_billing) }}</div>
+    <div class="kpi-footer">
+      <span>{{ overview.unpaid_bills }} pending claims</span>
+    </div>
+  </div>
+</section>
+
+<!-- Strategic Pillars for Government & Donor Funding -->
+<div style="margin-bottom: 24px; text-align: center;">
+  <span class="page-eyebrow">Strategic Value Proposition</span>
+  <h2 class="page-title" style="font-size: 2.2rem; margin-bottom: 12px;">Five Pillars of National Healthcare Modernization</h2>
+  <p class="page-desc" style="max-width: 760px; margin: 0 auto;">
+    Engineered to solve critical bottlenecks in public health delivery, optimize donor grant allocations, and ensure 100% data sovereignty under national jurisdiction.
+  </p>
+</div>
+
+<div class="pillars-grid">
+  <div class="pillar-card">
+    <div class="pillar-icon">🆔</div>
+    <h3>1. Universal Citizen Health Registry (EHR)</h3>
+    <p>
+      Eliminates duplicate paper records across regional health facilities with normalized longitudinal citizen records, linking diagnoses, lab results, prescriptions, and NHIMA insurance coverage.
+    </p>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-icon">🏥</div>
+    <h3>2. Nationwide Bed & Emergency Grid</h3>
+    <p>
+      Live real-time visibility into ICU, Emergency, Operating Theatre, and General Ward bed occupancy to streamline patient transfers and national outbreak disaster preparedness.
+    </p>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-icon">💊</div>
+    <h3>3. Essential Medicines Stockout Prevention</h3>
+    <p>
+      Tracks medication inventory, lot numbers, and dispensing against doctor prescriptions in real-time, preventing pharmaceutical leakages and stock exhaustion in public pharmacies.
+    </p>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-icon">💰</div>
+    <h3>4. NHIMA Interoperability & Revenue Cycle</h3>
+    <p>
+      Automates public health insurance claim validation, patient co-payments, and subsidized fee waivers to ensure transparent fiscal governance and zero revenue leakage.
+    </p>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-icon">🛡️</div>
+    <h3>5. Sovereign DBA Security & Resilience</h3>
+    <p>
+      Powered by a 3NF PostgreSQL architecture with primary-to-replica streaming replication, sub-15-minute RPO/RTO disaster recovery, and 4-tier least-privilege RBAC.
+    </p>
+  </div>
+
+  <div class="pillar-card">
+    <div class="pillar-icon">📈</div>
+    <h3>6. Epidemiological Disease Surveillance</h3>
+    <p>
+      Aggregated diagnostic data feeds directly into national public health dashboards, enabling rapid detection of disease outbreaks and targeted immunization planning.
+    </p>
+  </div>
+</div>
+
+<!-- Live Hospital Bed & Clinical Operations Grid Preview -->
+<div class="panel-grid-2">
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">🛏️ Hospital Ward & Emergency Bed Grid</h2>
+        <span class="panel-subtitle">Real-time facility capacity and room availability</span>
+      </div>
+      <a href="{{ url_for('admissions_view') }}" class="btn btn-secondary btn-sm">Manage Wards &rarr;</a>
+    </div>
+
+    <div class="bed-grid">
+      {% for room in rooms %}
+        <div class="bed-card status-{{ room.status.lower() }}">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div class="bed-num">{{ room.room_number }}</div>
+            <span class="badge badge-{{ room.status.lower() }}">{{ room.status }}</span>
+          </div>
+          <div class="bed-type">{{ room.room_type }}</div>
+          <div class="bed-dept">{{ room.department_name }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2 class="panel-title">⚡ Quick Clinical Actions</h2>
+        <span class="panel-subtitle">Standardized workflows for health workers</span>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <a href="{{ url_for('patients_list') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 18px;">
+        <span style="font-size: 1.3rem;">📋</span>
+        <div style="text-align: left;">
+          <strong style="display: block; font-size: 0.95rem;">Citizen EHR Directory</strong>
+          <small style="color: var(--text-muted);">Lookup patient history, blood type & NHIMA</small>
+        </div>
+      </a>
+
+      <a href="{{ url_for('admissions_view') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 18px;">
+        <span style="font-size: 1.3rem;">🛏️</span>
+        <div style="text-align: left;">
+          <strong style="display: block; font-size: 0.95rem;">Admit Inpatient</strong>
+          <small style="color: var(--text-muted);">Assign patient to ICU, Emergency or Ward</small>
+        </div>
+      </a>
+
+      <a href="{{ url_for('pharmacy_view') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 18px;">
+        <span style="font-size: 1.3rem;">💊</span>
+        <div style="text-align: left;">
+          <strong style="display: block; font-size: 0.95rem;">Pharmacy Inventory</strong>
+          <small style="color: var(--text-muted);">Check essential medication stock & prescriptions</small>
+        </div>
+      </a>
+
+      <a href="{{ url_for('analytics_view') }}" class="btn btn-secondary" style="justify-content: flex-start; padding: 14px 18px;">
+        <span style="font-size: 1.3rem;">📊</span>
+        <div style="text-align: left;">
+          <strong style="display: block; font-size: 0.95rem;">Epidemiological Intelligence</strong>
+          <small style="color: var(--text-muted);">Public health reporting & disease burden charts</small>
+        </div>
+      </a>
+    </div>
+  </section>
+</div>
+
+<!-- Government Grant & Funding Justification Box -->
+<section class="dossier-card" style="background: linear-gradient(135deg, #090d16 0%, #1e293b 100%); color: white;">
+  <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+    <span class="badge badge-nhima" style="margin-bottom: 16px;">National Grant Funding Dossier</span>
+    <h2 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 16px; color: white;">
+      Ready for Ministry of Health & Bilateral Donor Funding
+    </h2>
+    <p style="color: #cbd5e1; font-size: 1.05rem; line-height: 1.7; margin-bottom: 28px;">
+      This platform has been audited for compliance with national digital health standards. Designed with open, transparent database administration practices, streaming data replication, and strict RBAC to guarantee fiscal and technical accountability.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+      <a href="{{ url_for('about_view') }}" class="btn btn-primary btn-lg">
+        <span>📖 Read Full Strategic Whitepaper</span>
+      </a>
+      <a href="{{ url_for('system_health_view') }}" class="btn btn-secondary btn-lg">
+        <span>🛡️ Inspect DBA Security Architecture</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

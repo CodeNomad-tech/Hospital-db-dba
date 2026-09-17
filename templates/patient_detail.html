@@ -1,0 +1,284 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen EHR: {{ patient.first_name }} {{ patient.last_name }} — AegisHealth National{% endblock %}
+
+{% block content %}
+{% if patient %}
+  <div class="ehr-header">
+    <div>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+        <span class="badge badge-nhima">Official Citizen EHR</span>
+        <span style="font-family: var(--font-mono); font-size: 0.85rem; color: #38bdf8;">RECORD ID: #{{ patient.patient_id }}</span>
+      </div>
+      <h1 style="font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em;">
+        {{ patient.first_name }} {{ patient.last_name }}
+      </h1>
+      <div class="ehr-demographics">
+        <div class="demographic-item">
+          <span>Date of Birth</span>
+          <strong>{{ patient.date_of_birth }}</strong>
+        </div>
+        <div class="demographic-item">
+          <span>Gender</span>
+          <strong>{{ patient.gender or 'UNSPECIFIED' }}</strong>
+        </div>
+        <div class="demographic-item">
+          <span>Blood Group</span>
+          <strong style="color: #38bdf8;">{{ patient.blood_type or '—' }}</strong>
+        </div>
+        <div class="demographic-item">
+          <span>Phone</span>
+          <strong>{{ patient.phone or '—' }}</strong>
+        </div>
+        <div class="demographic-item">
+          <span>Insurance (NHIMA)</span>
+          <strong style="color: #4ade80;">
+            {% if insurance %}
+              {{ insurance.provider }} ({{ insurance.policy_number }})
+            {% else %}
+              Standard Public Healthcare
+            {% endif %}
+          </strong>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: flex-start;" class="no-print">
+      <button type="button" onclick="window.print()" class="btn btn-secondary">
+        <span>🖨️ Export / Print EHR</span>
+      </button>
+      <a href="{{ url_for('patients_list') }}" class="btn btn-primary">
+        <span>&larr; Citizen Registry</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Insurance Policy Card if Present -->
+  {% if insurance %}
+    <div class="panel" style="margin-bottom: 24px; border-left: 4px solid var(--cyan-500); background: #f0f9ff;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <h3 style="font-size: 1.05rem; color: #0369a1; margin-bottom: 4px;">🛡️ National Health Insurance Policy: {{ insurance.provider }}</h3>
+          <p style="font-size: 0.88rem; color: #0c4a6e;">
+            Policy #: <strong>{{ insurance.policy_number }}</strong> &bull; Coverage: {{ insurance.coverage_details or 'Standard national coverage' }} &bull; Valid Until: {{ insurance.valid_until or 'Ongoing' }}
+          </p>
+        </div>
+        <span class="badge badge-nhima">Active NHIMA Member</span>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Main Patient EHR Grid: Clinical Records + Prescriptions + Admissions -->
+  <div class="panel-grid-2">
+    <!-- Longitudinal Medical Records -->
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">🩺 Clinical Diagnoses & Medical History</h2>
+          <span class="panel-subtitle">Doctor examinations and visit summaries</span>
+        </div>
+      </div>
+
+      {% if records %}
+        <div class="timeline">
+          {% for record in records %}
+            <div class="timeline-item">
+              <div class="timeline-card">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                  <strong style="color: var(--gov-navy-900); font-size: 1rem;">{{ record.visit_date }}</strong>
+                  <span class="badge badge-gov">Dr. {{ record.doctor_name }}</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                  <strong style="color: #0369a1; font-size: 0.88rem;">Diagnosis:</strong>
+                  <p style="font-size: 0.92rem; color: var(--gov-navy-900); margin-top: 2px;">{{ record.diagnosis or 'Routine consultation' }}</p>
+                </div>
+                <div style="margin-bottom: 8px;">
+                  <strong style="color: #047857; font-size: 0.88rem;">Treatment / Plan:</strong>
+                  <p style="font-size: 0.9rem; color: var(--gov-navy-700); margin-top: 2px;">{{ record.treatment or 'Supportive therapy' }}</p>
+                </div>
+                {% if record.notes %}
+                  <div style="background: white; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-size: 0.85rem; color: var(--text-muted);">
+                    <strong>Clinical Notes:</strong> {{ record.notes }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); padding: 24px; text-align: center;">No clinical history records on file for this citizen.</p>
+      {% endif %}
+    </section>
+
+    <!-- Prescriptions & Admissions Stack -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      <!-- Prescribed Medications -->
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">💊 Prescribed Medications</h2>
+            <span class="panel-subtitle">Dispensary and dosage directives</span>
+          </div>
+        </div>
+
+        {% if prescriptions %}
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Medication</th>
+                  <th>Dosage</th>
+                  <th>Duration</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for rx in prescriptions %}
+                  <tr>
+                    <td><strong>{{ rx.medication_name }}</strong></td>
+                    <td><span class="badge badge-gov">{{ rx.dosage }}</span></td>
+                    <td>{{ rx.duration_days }} days</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted); font-size: 0.88rem;">No active prescriptions recorded.</p>
+        {% endif %}
+      </section>
+
+      <!-- Inpatient Hospital Stays -->
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">🛏️ Hospital Ward Admissions</h2>
+            <span class="panel-subtitle">Inpatient room allocations & stays</span>
+          </div>
+        </div>
+
+        {% if admissions %}
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Room</th>
+                  <th>Admitted</th>
+                  <th>Discharged</th>
+                  <th>Diagnosis</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for adm in admissions %}
+                  <tr>
+                    <td>
+                      <span class="badge badge-gov">{{ adm.room_number }} ({{ adm.room_type }})</span>
+                    </td>
+                    <td style="font-size: 0.8rem;">{{ adm.admission_date }}</td>
+                    <td style="font-size: 0.8rem;">{{ adm.discharge_date or 'Inpatient (Active)' }}</td>
+                    <td style="font-size: 0.85rem;">{{ adm.diagnosis or '—' }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <p style="color: var(--text-muted); font-size: 0.88rem;">No inpatient admission history.</p>
+        {% endif %}
+      </section>
+    </div>
+  </div>
+
+  <!-- Outpatient Visits & Billing Statements -->
+  <div class="panel-grid-2">
+    <!-- Appointments -->
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">📅 Consultations & Triage Visits</h2>
+          <span class="panel-subtitle">Scheduled and completed appointments</span>
+        </div>
+      </div>
+
+      {% if appointments %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Physician</th>
+                <th>Status</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in appointments %}
+                <tr>
+                  <td style="font-size: 0.85rem;"><strong>{{ item.appointment_date }}</strong></td>
+                  <td>Dr. {{ item.doctor_name }}</td>
+                  <td><span class="badge badge-{{ item.status.lower() }}">{{ item.status }}</span></td>
+                  <td style="font-size: 0.85rem;">{{ item.reason or 'General consultation' }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); padding: 18px; text-align: center;">No appointment visits recorded.</p>
+      {% endif %}
+    </section>
+
+    <!-- Billing Ledger -->
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">💳 Billing & NHIMA Ledger</h2>
+          <span class="panel-subtitle">Fee statements and settlement audit</span>
+        </div>
+      </div>
+
+      {% if billing %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for bill in billing %}
+                <tr>
+                  <td style="font-size: 0.82rem;">{{ bill.bill_date }}</td>
+                  <td><strong>K {{ '%.2f'|format(bill.amount) }}</strong></td>
+                  <td><span class="badge badge-{{ bill.status.lower() }}">{{ bill.status }}</span></td>
+                  <td>
+                    <form method="post" action="{{ url_for('update_billing') }}" style="display: flex; gap: 4px;">
+                      <input type="hidden" name="bill_id" value="{{ bill.bill_id }}" />
+                      <input type="hidden" name="redirect_patient_id" value="{{ patient.patient_id }}" />
+                      <select name="status" style="padding: 2px 6px; font-size: 0.75rem; width: auto;">
+                        <option value="UNPAID" {% if bill.status == 'UNPAID' %}selected{% endif %}>UNPAID</option>
+                        <option value="PAID" {% if bill.status == 'PAID' %}selected{% endif %}>PAID</option>
+                        <option value="PARTIAL" {% if bill.status == 'PARTIAL' %}selected{% endif %}>PARTIAL</option>
+                        <option value="WAIVED" {% if bill.status == 'WAIVED' %}selected{% endif %}>WAIVED</option>
+                      </select>
+                      <button type="submit" class="btn btn-secondary btn-sm" style="padding: 2px 8px;">Save</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <p style="color: var(--text-muted); padding: 18px; text-align: center;">No billing ledger entries for this citizen.</p>
+      {% endif %}
+    </section>
+  </div>
+{% else %}
+  <div class="flash error">
+    Citizen record not found. Please return to the <a href="{{ url_for('patients_list') }}">Citizen Registry</a>.
+  </div>
+{% endif %}
+{% endblock %}

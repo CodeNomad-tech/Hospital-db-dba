@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block title %}NHIMA Insurance & Revenue Cycle Ledger — AegisHealth National{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">💳 Public Health Finance & Fiscal Transparency</span>
+    <h1 class="page-title">National Health Insurance (NHIMA) & Revenue Cycle Ledger</h1>
+    <p class="page-desc">
+      Comprehensive billing audit trail: patient co-pays, NHIMA claim settlements, inpatient fees, and medical fee waivers.
+    </p>
+  </div>
+</div>
+
+<!-- Financial Summary KPI Cards -->
+<section class="kpi-grid">
+  <div class="kpi-card accent-indigo">
+    <div class="kpi-header">
+      <span class="kpi-label">Gross Billed Value</span>
+      <div class="kpi-icon">💰</div>
+    </div>
+    <div class="kpi-value">K {{ '%.2f'|format(total_amount) }}</div>
+    <div class="kpi-footer">
+      <span>Total Invoices & Claims</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-emerald">
+    <div class="kpi-header">
+      <span class="kpi-label">Paid / Settled</span>
+      <div class="kpi-icon">✅</div>
+    </div>
+    <div class="kpi-value">K {{ '%.2f'|format(paid_amount) }}</div>
+    <div class="kpi-footer">
+      <span class="badge-up">&bull; {{ paid_count }} Settled Claims</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-rose">
+    <div class="kpi-header">
+      <span class="kpi-label">Outstanding / Unpaid</span>
+      <div class="kpi-icon">⏳</div>
+    </div>
+    <div class="kpi-value">K {{ '%.2f'|format(unpaid_amount) }}</div>
+    <div class="kpi-footer">
+      <span style="color: var(--rose-600); font-weight: 700;">{{ unpaid_count }} Pending Invoices</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-amber">
+    <div class="kpi-header">
+      <span class="kpi-label">Subsidized / Waived</span>
+      <div class="kpi-icon">🛡️</div>
+    </div>
+    <div class="kpi-value">K {{ '%.2f'|format(waived_amount) }}</div>
+    <div class="kpi-footer">
+      <span>Universal Social Protection</span>
+    </div>
+  </div>
+</section>
+
+<!-- Filter & Claims Ledger Panel -->
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">📑 Comprehensive NHIMA & Hospital Billing Ledger</h2>
+      <span class="panel-subtitle">Filter claims by payment reconciliation status</span>
+    </div>
+
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a href="{{ url_for('billing_view') }}" class="btn {% if not status_filter %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">All ({{ all_bills|length }})</a>
+      <a href="{{ url_for('billing_view', status='UNPAID') }}" class="btn {% if status_filter == 'UNPAID' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Unpaid</a>
+      <a href="{{ url_for('billing_view', status='PAID') }}" class="btn {% if status_filter == 'PAID' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Paid</a>
+      <a href="{{ url_for('billing_view', status='PARTIAL') }}" class="btn {% if status_filter == 'PARTIAL' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Partial</a>
+      <a href="{{ url_for('billing_view', status='WAIVED') }}" class="btn {% if status_filter == 'WAIVED' %}btn-primary{% else %}btn-secondary{% endif %} btn-sm">Waived</a>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Bill ID</th>
+          <th>Citizen Beneficiary</th>
+          <th>Service Origin</th>
+          <th>Date of Billing</th>
+          <th>Claim Amount</th>
+          <th>Payment Status</th>
+          <th>Reconcile / Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for bill in bills %}
+          <tr>
+            <td><span style="font-family: var(--font-mono); font-weight: 700; color: var(--teal-600);">#BILL-{{ bill.bill_id }}</span></td>
+            <td>
+              <a href="{{ url_for('patient_detail', patient_id=bill.patient_id) }}" style="text-decoration: none; font-weight: 700; color: var(--gov-navy-900);">
+                {{ bill.patient_name }}
+              </a>
+              {% if bill.insurance_provider %}
+                <div><span class="badge badge-nhima" style="font-size: 0.68rem;">{{ bill.insurance_provider }}</span></div>
+              {% endif %}
+            </td>
+            <td>
+              {% if bill.admission_id %}
+                <span class="badge badge-gov">Inpatient Ward Admission</span>
+              {% elif bill.appointment_id %}
+                <span class="badge badge-gov">Outpatient Consultation</span>
+              {% else %}
+                <span class="badge badge-gov">Clinical Service</span>
+              {% endif %}
+            </td>
+            <td style="font-size: 0.82rem; color: var(--gov-navy-700);">{{ bill.bill_date }}</td>
+            <td>
+              <strong style="font-size: 1rem; color: var(--gov-navy-900);">K {{ '%.2f'|format(bill.amount) }}</strong>
+            </td>
+            <td>
+              <span class="badge badge-{{ bill.status.lower() }}">{{ bill.status }}</span>
+            </td>
+            <td>
+              <form method="post" action="{{ url_for('update_billing') }}" style="display: flex; gap: 6px; align-items: center;">
+                <input type="hidden" name="bill_id" value="{{ bill.bill_id }}" />
+                <select name="status" style="padding: 4px 8px; font-size: 0.8rem; width: auto;">
+                  <option value="UNPAID" {% if bill.status == 'UNPAID' %}selected{% endif %}>UNPAID</option>
+                  <option value="PAID" {% if bill.status == 'PAID' %}selected{% endif %}>PAID</option>
+                  <option value="PARTIAL" {% if bill.status == 'PARTIAL' %}selected{% endif %}>PARTIAL</option>
+                  <option value="WAIVED" {% if bill.status == 'WAIVED' %}selected{% endif %}>WAIVED</option>
+                </select>
+                <button type="submit" class="btn btn-secondary btn-sm">Update</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 36px;">No billing records found for the selected status.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

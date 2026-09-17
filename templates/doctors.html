@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Medical Specialists & Doctor Directory — AegisHealth National{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">🩺 Clinical Governance & Credentialing</span>
+    <h1 class="page-title">National Medical Specialists & Physician Directory</h1>
+    <p class="page-desc">
+      Roster of certified medical doctors, surgical specialists, and departmental clinicians across public healthcare facilities.
+    </p>
+  </div>
+</div>
+
+<!-- Department Stats Grid -->
+<div class="panel-grid-3" style="margin-bottom: 28px;">
+  <div class="kpi-card accent-indigo">
+    <div class="kpi-header">
+      <span class="kpi-label">Active Specialists</span>
+      <div class="kpi-icon">👨‍⚕️</div>
+    </div>
+    <div class="kpi-value">{{ doctors|length }}</div>
+    <div class="kpi-footer">
+      <span>Certified Clinical Staff</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-emerald">
+    <div class="kpi-header">
+      <span class="kpi-label">Clinical Departments</span>
+      <div class="kpi-icon">🏥</div>
+    </div>
+    <div class="kpi-value">{{ departments|length }}</div>
+    <div class="kpi-footer">
+      <span>Cardiology, Emergency, Pediatrics, Ortho, Rad</span>
+    </div>
+  </div>
+
+  <div class="kpi-card">
+    <div class="kpi-header">
+      <span class="kpi-label">Physician Coverage</span>
+      <div class="kpi-icon">🛡️</div>
+    </div>
+    <div class="kpi-value">100%</div>
+    <div class="kpi-footer">
+      <span class="badge-up">&bull; 24/7 Specialist On-Call</span>
+    </div>
+  </div>
+</div>
+
+<!-- Specialist Doctors List -->
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">👨‍⚕️ Specialist Clinician Profiles</h2>
+      <span class="panel-subtitle">Assigned clinical departments and consultation points</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Physician Code</th>
+          <th>Doctor Name</th>
+          <th>Specialty</th>
+          <th>Department & Location</th>
+          <th>Official Email</th>
+          <th>Direct Contact</th>
+          <th>In Service Since</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for doc in doctors %}
+          <tr>
+            <td><span style="font-family: var(--font-mono); font-weight: 700; color: var(--teal-600);">#DOC-{{ doc.doctor_id }}</span></td>
+            <td>
+              <strong style="font-size: 0.95rem; color: var(--gov-navy-900);">
+                Dr. {{ doc.first_name }} {{ doc.last_name }}
+              </strong>
+            </td>
+            <td>
+              <span class="badge badge-nhima">{{ doc.specialty }}</span>
+            </td>
+            <td>
+              <strong>{{ doc.department_name or 'General Medicine' }}</strong>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">{{ doc.department_location or 'Main Campus' }}</div>
+            </td>
+            <td>
+              <a href="mailto:{{ doc.email }}" style="color: var(--cyan-600); text-decoration: none; font-size: 0.85rem;">
+                {{ doc.email }}
+              </a>
+            </td>
+            <td>{{ doc.phone or '—' }}</td>
+            <td style="font-size: 0.82rem; color: var(--gov-navy-700);">{{ doc.hire_date }}</td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No doctors found on file.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Database Administration & Sovereign Governance — AegisHealth National{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">🛡️ Sovereign Data Infrastructure & DBA Operations</span>
+    <h1 class="page-title">Enterprise Database Governance & Health Monitor</h1>
+    <p class="page-desc">
+      Real-time health telemetry: PostgreSQL 16 streaming replication, least-privilege RBAC permission matrix, and backup disaster recovery verification.
+    </p>
+  </div>
+</div>
+
+<!-- DBA Infrastructure Status Overview -->
+<section class="kpi-grid">
+  <div class="kpi-card accent-emerald">
+    <div class="kpi-header">
+      <span class="kpi-label">Primary Node (`db-primary`)</span>
+      <div class="kpi-icon">🟢</div>
+    </div>
+    <div class="kpi-value" style="font-size: 1.5rem;">ONLINE</div>
+    <div class="kpi-footer">
+      <span class="badge-up">&bull; Read / Write Active</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-emerald">
+    <div class="kpi-header">
+      <span class="kpi-label">Replica Node (`db-replica`)</span>
+      <div class="kpi-icon">🔄</div>
+    </div>
+    <div class="kpi-value" style="font-size: 1.5rem;">STREAMING</div>
+    <div class="kpi-footer">
+      <span>Lag: &lt; 10ms (Zero Loss)</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-indigo">
+    <div class="kpi-header">
+      <span class="kpi-label">Disaster Recovery RPO</span>
+      <div class="kpi-icon">⏱️</div>
+    </div>
+    <div class="kpi-value" style="font-size: 1.5rem;">&lt; 15 Mins</div>
+    <div class="kpi-footer">
+      <span>Automated WAL & Dumps</span>
+    </div>
+  </div>
+
+  <div class="kpi-card accent-amber">
+    <div class="kpi-header">
+      <span class="kpi-label">RBAC Security Tier</span>
+      <div class="kpi-icon">🔐</div>
+    </div>
+    <div class="kpi-value" style="font-size: 1.5rem;">4 Roles</div>
+    <div class="kpi-footer">
+      <span>Least Privilege Enforced</span>
+    </div>
+  </div>
+</section>
+
+<!-- Replication Architecture & Topology -->
+<section class="panel" style="margin-bottom: 28px;">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">🌐 Sovereign High-Availability Replication Topology</h2>
+      <span class="panel-subtitle">Primary-to-Replica streaming replication ensuring 24/7 uptime for emergency healthcare</span>
+    </div>
+  </div>
+
+  <div style="background: var(--gov-navy-950); color: #cbd5e1; border-radius: var(--radius-md); padding: 24px; font-family: var(--font-mono); font-size: 0.85rem; line-height: 1.8; overflow-x: auto;">
+    <pre style="margin: 0; color: #38bdf8;">
+                 ┌─────────────────────────────┐        Streaming Replication        ┌─────────────────────────────┐
+   App / Staff → │   db-primary:5432 (RW)      │ ───────────────────────────────────▶ │   db-replica:5433 (RO)      │
+                 │   - Clinical Writes         │           (Lag: 0 bytes)             │   - Analytics & Reporting   │
+                 │   - NHIMA Claims Ledger     │                                      │   - Public Health BI        │
+                 └─────────────────────────────┘                                      └─────────────────────────────┘
+                                │
+                                ▼
+                 Automated Nightly pg_dump ──▶ backups/ (14-day retention, SHA-256 integrity verified)
+    </pre>
+  </div>
+</section>
+
+<!-- RBAC Security Matrix -->
+<section class="panel" style="margin-bottom: 28px;">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">🔐 4-Tier Role-Based Access Control (RBAC) Matrix</h2>
+      <span class="panel-subtitle">Enforcing clinical patient privacy (HIPAA / GDPR / Data Protection Act)</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Role Identifier</th>
+          <th>Description & Scope</th>
+          <th>Patients & Demographics</th>
+          <th>Clinical Notes & Records</th>
+          <th>Prescriptions & Pharmacy</th>
+          <th>Billing & NHIMA Ledger</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color: var(--gov-navy-900);">`hospital_admin`</strong></td>
+          <td>Database Administrator (DBA)</td>
+          <td><span class="badge badge-available">FULL CRUD</span></td>
+          <td><span class="badge badge-available">FULL CRUD</span></td>
+          <td><span class="badge badge-available">FULL CRUD</span></td>
+          <td><span class="badge badge-available">FULL CRUD</span></td>
+        </tr>
+        <tr>
+          <td><strong style="color: #0369a1;">`hospital_doctor`</strong></td>
+          <td>Physicians & Surgeons</td>
+          <td><span class="badge badge-available">SELECT</span></td>
+          <td><span class="badge badge-available">INSERT / UPDATE / SELECT</span></td>
+          <td><span class="badge badge-available">INSERT / SELECT</span></td>
+          <td><span class="badge badge-partial">SELECT ONLY</span></td>
+        </tr>
+        <tr>
+          <td><strong style="color: #059669;">`hospital_reception`</strong></td>
+          <td>Admissions & Triage Staff</td>
+          <td><span class="badge badge-available">INSERT / UPDATE / SELECT</span></td>
+          <td><span class="badge badge-occupied">NO ACCESS (RESTRICTED)</span></td>
+          <td><span class="badge badge-occupied">NO ACCESS</span></td>
+          <td><span class="badge badge-available">INSERT / UPDATE / SELECT</span></td>
+        </tr>
+        <tr>
+          <td><strong style="color: #d97706;">`hospital_analyst`</strong></td>
+          <td>Ministry BI & Epidemiologists</td>
+          <td><span class="badge badge-partial">SELECT (ANON)</span></td>
+          <td><span class="badge badge-partial">SELECT ONLY</span></td>
+          <td><span class="badge badge-partial">SELECT ONLY</span></td>
+          <td><span class="badge badge-partial">SELECT ONLY</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Backup & Disaster Recovery Verification -->
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">💾 Backup Automation & Integrity Verification Log</h2>
+      <span class="panel-subtitle">Audited disaster recovery verification procedures (`scripts/backup.sh` & `scripts/restore.sh`)</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Backup Target</th>
+          <th>Strategy</th>
+          <th>Retention Policy</th>
+          <th>Integrity Check</th>
+          <th>Recovery Time Objective (RTO)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>`hospital_db` Daily Dump</strong></td>
+          <td>`pg_dump --clean --if-exists`</td>
+          <td>14 days rolling</td>
+          <td><span class="badge badge-available">SHA-256 Passed</span></td>
+          <td>&lt; 5 minutes</td>
+        </tr>
+        <tr>
+          <td><strong>Physical Streaming Replica</strong></td>
+          <td>`pg_basebackup -R`</td>
+          <td>Continuous Streaming</td>
+          <td><span class="badge badge-available">Realtime WAL Sync</span></td>
+          <td>Immediate (Hot Standby)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,64 @@
+version: "3.9"
+
+services:
+  db-primary:
+    image: postgres:16
+    container_name: hospital-db-primary
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hospital_db
+      POSTGRES_USER: hospital_admin_login
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_env}
+      # Enables the extension used by scripts/monitor.py
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    volumes:
+      - primary_data:/var/lib/postgresql/data
+      - ./primary-init:/docker-entrypoint-initdb.d
+      - ../sql:/sql
+    ports:
+      - "5432:5432"
+    command: >
+      postgres
+      -c wal_level=replica
+      -c max_wal_senders=5
+      -c max_replication_slots=5
+      -c hot_standby=on
+      -c shared_preload_libraries=pg_stat_statements
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hospital_admin_login -d hospital_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  db-replica:
+    image: postgres:16
+    container_name: hospital-db-replica
+    restart: unless-stopped
+    depends_on:
+      db-primary:
+        condition: service_healthy
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_env}
+      PGUSER: replicator
+    volumes:
+      - replica_data:/var/lib/postgresql/data
+      - ./replica-entrypoint.sh:/replica-entrypoint.sh
+    entrypoint: ["/bin/bash", "/replica-entrypoint.sh"]
+    ports:
+      - "5433:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: hospital-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@hospital.local
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-change_me_in_env}
+    ports:
+      - "8080:80"
+    depends_on:
+      - db-primary
+
+volumes:
+  primary_data:
+  replica_data:

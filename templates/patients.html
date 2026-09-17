@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Citizen Health Registry (EHR) — AegisHealth National{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <span class="page-eyebrow">👥 Universal Health Coverage Registry</span>
+    <h1 class="page-title">Citizen Electronic Health Record (EHR) Directory</h1>
+    <p class="page-desc">
+      Master registry of citizens with longitudinal medical history, blood group profiles, and NHIMA national health insurance.
+    </p>
+  </div>
+  <div style="display: flex; gap: 10px;">
+    <button type="button" onclick="document.getElementById('new-patient-modal').classList.add('active')" class="btn btn-primary">
+      <span>+ Register New Citizen</span>
+    </button>
+  </div>
+</div>
+
+<!-- Search & Filtering Bar -->
+<section class="panel" style="margin-bottom: 24px;">
+  <form method="get" action="{{ url_for('patients_list') }}" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+    <div style="flex: 2; min-width: 240px;">
+      <label class="form-label">Search by Name, Phone, or Email</label>
+      <input type="text" name="q" value="{{ search_term }}" placeholder="e.g., Mwansa, John, 0977..." />
+    </div>
+
+    <div style="flex: 1; min-width: 140px;">
+      <label class="form-label">Blood Group</label>
+      <select name="blood_type">
+        <option value="">All Blood Groups</option>
+        <option value="A+" {% if blood_type_filter == 'A+' %}selected{% endif %}>A+</option>
+        <option value="A-" {% if blood_type_filter == 'A-' %}selected{% endif %}>A-</option>
+        <option value="B+" {% if blood_type_filter == 'B+' %}selected{% endif %}>B+</option>
+        <option value="B-" {% if blood_type_filter == 'B-' %}selected{% endif %}>B-</option>
+        <option value="AB+" {% if blood_type_filter == 'AB+' %}selected{% endif %}>AB+</option>
+        <option value="AB-" {% if blood_type_filter == 'AB-' %}selected{% endif %}>AB-</option>
+        <option value="O+" {% if blood_type_filter == 'O+' %}selected{% endif %}>O+</option>
+        <option value="O-" {% if blood_type_filter == 'O-' %}selected{% endif %}>O-</option>
+      </select>
+    </div>
+
+    <div style="display: flex; gap: 8px;">
+      <button type="submit" class="btn btn-primary">Filter Records</button>
+      {% if search_term or blood_type_filter %}
+        <a href="{{ url_for('patients_list') }}" class="btn btn-secondary">Reset</a>
+      {% endif %}
+    </div>
+  </form>
+</section>
+
+<!-- Citizen Patients Table -->
+<section class="panel">
+  <div class="panel-header">
+    <div>
+      <h2 class="panel-title">📋 Registered Citizen Profiles ({{ patients|length }} records)</h2>
+      <span class="panel-subtitle">Click "Open EHR" to access longitudinal clinical history, NHIMA policy, and prescriptions</span>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Citizen Name</th>
+          <th>Date of Birth / Gender</th>
+          <th>Contact & Email</th>
+          <th>Residential Address</th>
+          <th>Blood Group</th>
+          <th>NHIMA / Insurance</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for patient in patients %}
+          <tr>
+            <td><span style="font-family: var(--font-mono); font-weight: 700; color: var(--teal-600);">#{{ patient.patient_id }}</span></td>
+            <td>
+              <a href="{{ url_for('patient_detail', patient_id=patient.patient_id) }}" style="text-decoration: none; font-weight: 700; color: var(--gov-navy-900);">
+                {{ patient.first_name }} {{ patient.last_name }}
+              </a>
+            </td>
+            <td>
+              <div>{{ patient.date_of_birth }}</div>
+              <small class="badge badge-gov">{{ patient.gender or 'UNSPECIFIED' }}</small>
+            </td>
+            <td>
+              <div>{{ patient.phone or '—' }}</div>
+              <small style="color: var(--text-muted);">{{ patient.email or '' }}</small>
+            </td>
+            <td style="font-size: 0.82rem; color: var(--gov-navy-700);">
+              {{ patient.address or '—' }}
+            </td>
+            <td>
+              {% if patient.blood_type %}
+                <span class="badge badge-gov" style="font-weight: 800;">{{ patient.blood_type }}</span>
+              {% else %}
+                <span style="color: var(--text-muted);">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if patient.insurance_provider %}
+                <span class="badge badge-nhima">{{ patient.insurance_provider }}</span>
+              {% else %}
+                <span class="badge badge-partial">Standard</span>
+              {% endif %}
+            </td>
+            <td>
+              <a href="{{ url_for('patient_detail', patient_id=patient.patient_id) }}" class="btn btn-secondary btn-sm">
+                Open EHR &rarr;
+              </a>
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 36px;">
+              No citizens found matching the search criteria.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Register New Citizen Modal Dialog -->
+<div class="modal-overlay" id="new-patient-modal">
+  <div class="modal-box">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px;">
+      <h3 style="color: var(--gov-navy-900); font-size: 1.3rem;">Register New Citizen</h3>
+      <button type="button" onclick="document.getElementById('new-patient-modal').classList.remove('active')" style="background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+
+    <form method="post" action="{{ url_for('create_patient') }}">
+      <div class="panel-grid-equal" style="margin-bottom: 0;">
+        <div class="form-group">
+          <label class="form-label">First Name *</label>
+          <input type="text" name="first_name" required placeholder="e.g. John" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name *</label>
+          <input type="text" name="last_name" required placeholder="e.g. Mumba" />
+        </div>
+      </div>
+
+      <div class="panel-grid-equal" style="margin-bottom: 0;">
+        <div class="form-group">
+          <label class="form-label">Date of Birth *</label>
+          <input type="date" name="date_of_birth" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gender *</label>
+          <select name="gender" required>
+            <option value="MALE">MALE</option>
+            <option value="FEMALE">FEMALE</option>
+            <option value="OTHER">OTHER</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="panel-grid-equal" style="margin-bottom: 0;">
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="tel" name="phone" placeholder="e.g. 0966111111" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Blood Group</label>
+          <select name="blood_type">
+            <option value="">-- Select --</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" name="email" placeholder="e.g. john.mumba@example.com" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Residential Address</label>
+        <textarea name="address" rows="2" placeholder="e.g. Plot 12, Great East Road, Lusaka"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button type="button" onclick="document.getElementById('new-patient-modal').classList.remove('active')" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save Citizen Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
